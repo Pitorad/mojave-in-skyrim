@@ -12,7 +12,8 @@ Fallout: New Vegas: its soundtrack and Radio New Vegas, live in Skyrim. Single p
   a new game plays New Vegas's main title.
 - **Radio New Vegas.** Press **N** to switch it on or off. It plays the station's songs from your
   copy of New Vegas, with Mr. New Vegas saying hello, introducing songs and reading the news between
-  them. A notice shows each song's title.
+  them. A notice shows each song's title. **=** and **-** turn the radio up and down (10% a press);
+  your level is remembered between sessions.
 - Story moments (the Word Wall chant, Sovngarde, the Elder Scroll, Alduin's defeat and a few more)
   keep Skyrim's own music.
 - Your Music and Master volume sliders still apply. Settings (key, loudness, how often the news

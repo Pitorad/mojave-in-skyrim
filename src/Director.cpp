@@ -130,7 +130,7 @@ namespace mis::Director
 				focus += std::clamp(focusTarget - focus, -a_dt * 2.0f, a_dt * 2.0f);
 				const float master = snap.master;
 				musicDeck.Update(a_dt, master * snap.music * s.music_fVolume * focus);
-				radioDeck.Update(a_dt, master * s.radio_fVolume * focus);
+				radioDeck.Update(a_dt, master * Settings::RadioVolume() * focus);
 
 				if (++ticksSinceVolumeLog >= 1200) {  // once a minute
 					ticksSinceVolumeLog = 0;

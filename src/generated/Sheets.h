@@ -218,18 +218,18 @@ namespace mis::sheets
 	};
 	struct HookInfo { Hook id; std::string_view name; std::string_view api; bool verified; };
 	inline constexpr std::array<HookInfo, 12> kHooks{{
-		{ Hook::asi_boot, "asi_boot", "DllMain (.asi via Ultimate ASI Loader) -> thread waits for RE::UI::GetSingleton()", false },
-		{ Hook::data_loaded, "data_loaded", "RE::UI MenuOpenCloseEvent sink: Main Menu opening (all plugins loaded), retried on later menu events", false },
-		{ Hook::music_types, "music_types", "RE::TESDataHandler::LookupFormID(localId, plugin)", false },
-		{ Hook::music_current, "music_current", "RE::BSMusicManager::GetSingleton()->current, skyrim_cast<RE::BGSMusicType*> (not a form = Skyrim's internal NoMusic)", false },
-		{ Hook::music_mute, "music_mute", "RE::BGSSoundCategory 0x071E64 (AudioCategoryMUS) SetStaticVolumeMultiplier", false },
-		{ Hook::volume_sliders, "volume_sliders", "RE::BGSSoundCategory 0x0EB803 (master) and 0x071E64 (music) volumeMult", false },
-		{ Hook::game_hour, "game_hour", "RE::Calendar::GetSingleton()->GetHour()", false },
+		{ Hook::asi_boot, "asi_boot", "DllMain (.asi via Ultimate ASI Loader) -> thread waits for RE::UI::GetSingleton()", true },
+		{ Hook::data_loaded, "data_loaded", "RE::UI MenuOpenCloseEvent sink: Main Menu opening (all plugins loaded), retried on later menu events", true },
+		{ Hook::music_types, "music_types", "RE::TESDataHandler::LookupFormID(localId, plugin)", true },
+		{ Hook::music_current, "music_current", "RE::BSMusicManager::GetSingleton()->current, skyrim_cast<RE::BGSMusicType*> (not a form = Skyrim's internal NoMusic)", true },
+		{ Hook::music_mute, "music_mute", "RE::BGSSoundCategory 0x071E64 (AudioCategoryMUS) SetStaticVolumeMultiplier", true },
+		{ Hook::volume_sliders, "volume_sliders", "RE::BGSSoundCategory 0x0EB803 (master) and 0x071E64 (music) volumeMult", true },
+		{ Hook::game_hour, "game_hour", "RE::Calendar::GetSingleton()->GetHour()", true },
 		{ Hook::input, "input", "RE::BSInputDeviceManager::GetSingleton()->AddEventSink(BSTEventSink<InputEvent*>)", false },
 		{ Hook::ui_state, "ui_state", "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console); Main Menu open/close events", false },
-		{ Hook::notify, "notify", "RE::SendHUDMessage::ShowHUDMessage(text)", false },
-		{ Hook::focus, "focus", "Win32 GetForegroundWindow + GetWindowThreadProcessId", false },
-		{ Hook::crash_log, "crash_log", "AddVectoredExceptionHandler + MiniDumpWriteDump (dbghelp) for faults inside MojaveInSkyrim.asi", false },
+		{ Hook::notify, "notify", "RE::SendHUDMessage::ShowHUDMessage(text)", true },
+		{ Hook::focus, "focus", "Win32 GetForegroundWindow + GetWindowThreadProcessId", true },
+		{ Hook::crash_log, "crash_log", "AddVectoredExceptionHandler + MiniDumpWriteDump (dbghelp) for faults inside MojaveInSkyrim.asi", true },
 	}};
 
 	// Settings: one field per settings row, named <section>_<key>.
@@ -237,6 +237,9 @@ namespace mis::sheets
 	{
 		std::int32_t radio_iToggleKey{ 49 };
 		float radio_fVolume{ 1.0f };
+		std::int32_t radio_iVolumeUpKey{ 13 };
+		std::int32_t radio_iVolumeDownKey{ 12 };
+		float radio_fVolumeStep{ 0.1f };
 		float radio_fSongIntroChance{ 0.5f };
 		std::int32_t radio_iNewsEverySongs{ 4 };
 		bool radio_bGreetOnSwitchOn{ true };
@@ -259,6 +262,9 @@ namespace mis::sheets
 	{
 		a_out.radio_iToggleKey = std::clamp<std::int32_t>(a_ini.GetInt("Radio", "iToggleKey", a_out.radio_iToggleKey), 1, 255);
 		a_out.radio_fVolume = std::clamp(a_ini.GetFloat("Radio", "fVolume", a_out.radio_fVolume), 0.0f, 2.0f);
+		a_out.radio_iVolumeUpKey = std::clamp<std::int32_t>(a_ini.GetInt("Radio", "iVolumeUpKey", a_out.radio_iVolumeUpKey), 1, 255);
+		a_out.radio_iVolumeDownKey = std::clamp<std::int32_t>(a_ini.GetInt("Radio", "iVolumeDownKey", a_out.radio_iVolumeDownKey), 1, 255);
+		a_out.radio_fVolumeStep = std::clamp(a_ini.GetFloat("Radio", "fVolumeStep", a_out.radio_fVolumeStep), 0.01f, 0.5f);
 		a_out.radio_fSongIntroChance = std::clamp(a_ini.GetFloat("Radio", "fSongIntroChance", a_out.radio_fSongIntroChance), 0.0f, 1.0f);
 		a_out.radio_iNewsEverySongs = std::clamp<std::int32_t>(a_ini.GetInt("Radio", "iNewsEverySongs", a_out.radio_iNewsEverySongs), 0, 50);
 		a_out.radio_bGreetOnSwitchOn = a_ini.GetBool("Radio", "bGreetOnSwitchOn", a_out.radio_bGreetOnSwitchOn);

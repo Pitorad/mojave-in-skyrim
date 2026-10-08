@@ -29,6 +29,12 @@ namespace mis
 			}
 		};
 
+		std::optional<fs::path> UserFile()
+		{
+			auto dir = logger::log_directory();
+			return dir ? std::optional(*dir / "MojaveInSkyrim.user.ini") : std::nullopt;
+		}
+
 		bool LooksLikeFnv(const fs::path& a_dir)
 		{
 			std::error_code ec;
@@ -64,6 +70,14 @@ namespace mis
 			logger::info("settings: {} not found, using defaults", a_ini.string());
 		}
 		sheets::ReadSettings(IniReader{ ini }, values);
+		radioVolume = values.radio_fVolume;
+		if (auto user = UserFile()) {
+			CSimpleIniA mine;
+			if (mine.LoadFile(user->c_str()) >= 0 && mine.GetValue("Radio", "fVolume", nullptr)) {
+				radioVolume = std::clamp(static_cast<float>(mine.GetDoubleValue("Radio", "fVolume", values.radio_fVolume)), 0.0f, 2.0f);
+				logger::info("settings: radio volume {:.2f} from {}", radioVolume.load(), user->string());
+			}
+		}
 		if (values.debug_bVerboseLog) {
 			spdlog::default_logger()->set_level(spdlog::level::debug);
 			spdlog::default_logger()->flush_on(spdlog::level::debug);
@@ -71,6 +85,23 @@ namespace mis
 		logger::info("settings: radio key {:#x}, radio volume {}, music volume {}, crossfade {}s, day {}h-{}h",
 			values.radio_iToggleKey, values.radio_fVolume, values.music_fVolume, values.music_fCrossfadeSeconds,
 			values.music_iDayStartHour, values.music_iNightStartHour);
+	}
+
+	float Settings::NudgeRadioVolume(float a_delta)
+	{
+		// Round to the step so repeated presses land on clean values (0.7, not 0.70000005).
+		const float step = std::max(values.radio_fVolumeStep, 0.01f);
+		const float v = std::clamp(std::round((radioVolume + a_delta) / step) * step, 0.0f, 2.0f);
+		radioVolume = v;
+		if (auto user = UserFile()) {
+			CSimpleIniA mine;
+			mine.SetValue("Radio", nullptr, nullptr, "; Mojave in Skyrim: what you set in game with the radio volume keys.");
+			mine.SetDoubleValue("Radio", "fVolume", v);
+			if (mine.SaveFile(user->c_str()) < 0) {
+				logger::warn("couldn't save {}", user->string());
+			}
+		}
+		return v;
 	}
 
 	std::optional<fs::path> Settings::FalloutNVFolder()

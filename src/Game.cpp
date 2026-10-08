@@ -60,18 +60,32 @@ namespace mis::Game
 				if (!a_event) {
 					return RE::BSEventNotifyControl::kContinue;
 				}
-				const auto key = static_cast<std::uint32_t>(Settings::Get().radio_iToggleKey);
+				const auto& s = Settings::Get();
+				const auto toggle = static_cast<std::uint32_t>(s.radio_iToggleKey);
+				const auto up = static_cast<std::uint32_t>(s.radio_iVolumeUpKey);
+				const auto down = static_cast<std::uint32_t>(s.radio_iVolumeDownKey);
 				for (auto e = *a_event; e; e = e->next) {
 					const auto b = e->AsButtonEvent();
-					if (!b || b->GetDevice() != RE::INPUT_DEVICE::kKeyboard || b->GetIDCode() != key || !b->IsDown()) {
+					if (!b || b->GetDevice() != RE::INPUT_DEVICE::kKeyboard || !b->IsDown()) {
 						continue;
 					}
-					// ui_state: the key means nothing while a menu or the console has it.
+					const auto code = b->GetIDCode();
+					if (code != toggle && code != up && code != down) {
+						continue;
+					}
+					// ui_state: the keys mean nothing while a menu or the console has them.
 					auto ui = RE::UI::GetSingleton();
 					if (ui->GameIsPaused() || ui->IsMenuOpen(RE::Console::MENU_NAME)) {
 						continue;
 					}
-					Director::ToggleRadio();
+					if (code == toggle) {
+						Director::ToggleRadio();
+					} else {
+						const float v = Settings::NudgeRadioVolume(code == up ? s.radio_fVolumeStep : -s.radio_fVolumeStep);
+						const auto pct = static_cast<int>(std::lround(v * 100.0f));
+						RE::SendHUDMessage::ShowHUDMessage(fmt::format("Radio New Vegas volume: {}%", pct).c_str(), nullptr, false);
+						logger::info("radio volume {}%", pct);
+					}
 				}
 				return RE::BSEventNotifyControl::kContinue;
 			}

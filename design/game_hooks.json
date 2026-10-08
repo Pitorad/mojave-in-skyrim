@@ -79,18 +79,18 @@
       "api": "RE::BSInputDeviceManager::GetSingleton()->AddEventSink(BSTEventSink<InputEvent*>)",
       "thread": "main",
       "access": "sink",
-      "purpose": "radio toggle key; runs every frame, so it also takes the game-state snapshot and shows queued notices",
+      "purpose": "radio toggle and volume keys; runs every frame, so it also takes the game-state snapshot and shows queued notices",
       "verified": true,
-      "evidence": "N toggles: log 'radio on'/'radio off'; input sink measured 600/600 calls with no input (runs every frame)"
+      "evidence": "0.2.0: N toggles (log 'radio on/off'); = and - step the radio 110%..10% in 10% steps with HUD notice (log 'radio volume N%'); level saved to MojaveInSkyrim.user.ini and reloaded at next start (log 'radio volume 0.20 from ...user.ini'); sink runs every frame (600/600 empty calls)"
     },
     {
       "id": "ui_state",
       "api": "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console); Main Menu open/close events",
       "thread": "main",
       "access": "read",
-      "purpose": "ignore the radio key while menus or the console are open; know when the main menu is up [main-menu tracking proven (title at main menu); 'N ignored while a menu is open' still to test]",
-      "verified": false,
-      "evidence": ""
+      "purpose": "ignore the radio key while menus or the console are open; know when the main menu is up",
+      "verified": true,
+      "evidence": "player test 2026-10-07 on 0.2.0: Esc menu open + N did nothing, N after closing toggled; NoMusic at main menu -> title via Main Menu events"
     },
     {
       "id": "notify",
