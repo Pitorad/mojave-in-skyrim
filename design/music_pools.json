@@ -1,0 +1,30 @@
+{
+  "sheet": "music_pools",
+  "about": "Groups of Fallout: New Vegas music, read from the player's own {fnv}/Data/Music. Each row becomes one MusicPool struct.",
+  "columns": {
+    "id": "pool id referenced by skyrim_music_types.pool",
+    "label": "human name, used in the log",
+    "sources": "folders or single .mp3 files under {fnv}/Data/Music that form the pool; empty for silence and skyrim",
+    "dayNight": "true: pick files named _Day_ between dayStartHour and nightStartHour (settings), _Night_ otherwise",
+    "repeat": "loop = keep shuffling tracks while this pool is wanted; once = play one track, then silence"
+  },
+  "rows": [
+    { "id": "desert",   "label": "Mojave desert",     "sources": ["LOC/DesertExploration"],                                   "dayNight": true,  "repeat": "loop" },
+    { "id": "mountain", "label": "Mojave mountains",  "sources": ["LOC/Mountain"],                                            "dayNight": true,  "repeat": "loop" },
+    { "id": "snow",     "label": "Jacobstown lodge",  "sources": ["LOC/Jacobstown"],                                          "dayNight": true,  "repeat": "loop" },
+    { "id": "ruins",    "label": "Corporate ruins",   "sources": ["LOC/CorporateRuins"],                                      "dayNight": true,  "repeat": "loop" },
+    { "id": "town",     "label": "Mojave towns",      "sources": ["LOC/DesertSettlement", "LOC/LargerTown", "LOC/NewCaliforniaRepublic", "LOC/Freeside", "LOC/IndustrialCity"], "dayNight": true, "repeat": "loop" },
+    { "id": "fortress", "label": "Legion and the Dam","sources": ["LOC/CaesarsLegion", "LOC/HooverDam"],                      "dayNight": false, "repeat": "loop" },
+    { "id": "dungeon",  "label": "Vaults and caves",  "sources": ["DNGN/Dungeon1", "DNGN/Dungeon2", "DNGN/Dungeon3", "DNGN/Dungeon4", "DNGN/Dungeon5", "DNGN/Dungeon6", "DNGN/Dungeon7", "DNGN/Dungeon8"], "dayNight": false, "repeat": "loop" },
+    { "id": "combat",   "label": "Mojave firefight",  "sources": ["BTTL/Good1", "BTTL/Good2", "BTTL/Good3", "BTTL/Good4"],    "dayNight": false, "repeat": "loop" },
+    { "id": "boss",     "label": "Legion assault",    "sources": ["BTTL/Evil1", "BTTL/Evil2", "BTTL/Evil3", "BTTL/Evil4"],    "dayNight": false, "repeat": "loop" },
+    { "id": "lounge",   "label": "Casino muzak",      "sources": ["SCR/mus_SCR_Muzak.mp3"],                                   "dayNight": false, "repeat": "loop" },
+    { "id": "title",    "label": "New Vegas main title", "sources": ["Special/MainTitle.mp3"],                                "dayNight": false, "repeat": "once" },
+    { "id": "victory",  "label": "Victory stinger",   "sources": ["SCR/mus_SCR_VictorySinger.mp3", "SCR/mus_SCR_VictorySinger(alt1).mp3", "SCR/mus_SCR_VictorySinger(alt2).mp3", "SCR/mus_SCR_GoodspringsStinger.mp3"], "dayNight": false, "repeat": "once" },
+    { "id": "discovery","label": "Vegas stinger",     "sources": ["SCR/mus_SCR_VegasStinger.mp3"],                            "dayNight": false, "repeat": "once" },
+    { "id": "dread",    "label": "Ominous stinger",   "sources": ["Special/mus_endgametransitionstinger.mp3"],               "dayNight": false, "repeat": "once" },
+    { "id": "death",    "label": "Death stinger",     "sources": ["SCR/mus_SCR_DeathStinger.mp3"],                            "dayNight": false, "repeat": "once" },
+    { "id": "silence",  "label": "Silence",           "sources": [],                                                          "dayNight": false, "repeat": "once" },
+    { "id": "skyrim",   "label": "Skyrim's own music (story moments)", "sources": [],                                        "dayNight": false, "repeat": "loop" }
+  ]
+}

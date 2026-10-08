@@ -1,0 +1,37 @@
+{
+  "sheet": "game_hooks",
+  "about": "Every point where the mod reads or changes Skyrim. Each row becomes one Hook enum value and table entry; Hooks.cpp must handle every value (a switch with no default). 'verified' turns true only after the running game proved it, with 'evidence' saying how.",
+  "columns": {
+    "id": "hook id",
+    "api": "the CommonLib / Win32 call it uses",
+    "thread": "main (game thread, from an event sink) | worker (the mod's own thread) | any",
+    "access": "read | write | sink",
+    "purpose": "what the mod uses it for",
+    "verified": "true once seen working in the running game",
+    "evidence": "log line or screenshot that proved it; empty until verified"
+  },
+  "rows": [
+    { "id": "asi_boot", "api": "DllMain (.asi via Ultimate ASI Loader) -> thread waits for RE::UI::GetSingleton()", "thread": "worker", "access": "read",
+      "purpose": "start without SKSE on any game version Melty supports", "verified": false, "evidence": "" },
+    { "id": "data_loaded", "api": "RE::UI MenuOpenCloseEvent sink + RE::TESForm::LookupByID(0x7)", "thread": "main", "access": "sink",
+      "purpose": "know when forms are loaded, then resolve the music type table and install the input sink", "verified": false, "evidence": "" },
+    { "id": "music_types", "api": "RE::TESDataHandler::LookupFormID(localId, plugin)", "thread": "main", "access": "read",
+      "purpose": "turn skyrim_music_types rows into runtime form IDs", "verified": false, "evidence": "" },
+    { "id": "music_current", "api": "RE::BSMusicManager::GetSingleton()->current, skyrim_cast<RE::BGSMusicType*>", "thread": "worker", "access": "read",
+      "purpose": "which music Skyrim wants right now; picks the New Vegas pool", "verified": false, "evidence": "" },
+    { "id": "music_mute", "api": "RE::BGSSoundCategory 0x071E64 (AudioCategoryMUS) SetStaticVolumeMultiplier", "thread": "any", "access": "write",
+      "purpose": "silence Skyrim's music without touching the saved Music slider; restore for story moments", "verified": false, "evidence": "" },
+    { "id": "volume_sliders", "api": "RE::BGSSoundCategory 0x0EB803 (master) and 0x071E64 (music) volumeMult", "thread": "worker", "access": "read",
+      "purpose": "follow the player's Master and Music volume sliders", "verified": false, "evidence": "" },
+    { "id": "game_hour", "api": "RE::Calendar::GetSingleton()->GetHour()", "thread": "worker", "access": "read",
+      "purpose": "pick New Vegas day or night tracks", "verified": false, "evidence": "" },
+    { "id": "input", "api": "RE::BSInputDeviceManager::GetSingleton()->AddEventSink(BSTEventSink<InputEvent*>)", "thread": "main", "access": "sink",
+      "purpose": "radio toggle key; also drains queued notices on the game thread", "verified": false, "evidence": "" },
+    { "id": "ui_state", "api": "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console)", "thread": "main", "access": "read",
+      "purpose": "ignore the radio key while menus or the console are open", "verified": false, "evidence": "" },
+    { "id": "notify", "api": "RE::SendHUDMessage::ShowHUDMessage(text)", "thread": "main", "access": "write",
+      "purpose": "'Radio New Vegas: <song>' and on/off notices", "verified": false, "evidence": "" },
+    { "id": "focus", "api": "Win32 GetForegroundWindow + GetWindowThreadProcessId", "thread": "worker", "access": "read",
+      "purpose": "fade out while Skyrim is in the background", "verified": false, "evidence": "" }
+  ]
+}

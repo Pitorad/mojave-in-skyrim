@@ -1,0 +1,43 @@
+{
+  "sheet": "settings",
+  "about": "Player-tunable settings. Each row becomes one field of the Settings struct, its INI read and its line in the shipped MojaveInSkyrim.ini.",
+  "columns": {
+    "section": "INI section",
+    "key": "INI key (Hungarian prefix gives the type: b bool, i int, f float, s string)",
+    "type": "bool | int | float | string | pool (a music_pools.id)",
+    "default": "value when the INI line is missing",
+    "min": "lowest allowed (numbers) or null",
+    "max": "highest allowed (numbers) or null",
+    "about": "comment written above the line in the INI"
+  },
+  "rows": [
+    { "section": "Radio", "key": "iToggleKey", "type": "int", "default": 49, "min": 1, "max": 255,
+      "about": "Key that switches Radio New Vegas on and off, as a DirectInput scan code. 49 = N (free in Skyrim's default controls)." },
+    { "section": "Radio", "key": "fVolume", "type": "float", "default": 1.0, "min": 0.0, "max": 2.0,
+      "about": "Radio loudness, times Skyrim's Master volume." },
+    { "section": "Radio", "key": "fSongIntroChance", "type": "float", "default": 0.5, "min": 0.0, "max": 1.0,
+      "about": "Chance that Mr. New Vegas introduces the next song." },
+    { "section": "Radio", "key": "iNewsEverySongs", "type": "int", "default": 4, "min": 0, "max": 50,
+      "about": "Mr. New Vegas reads the news after this many songs. 0 = no news." },
+    { "section": "Radio", "key": "bGreetOnSwitchOn", "type": "bool", "default": true, "min": null, "max": null,
+      "about": "Mr. New Vegas says hello when you switch the radio on." },
+    { "section": "Music", "key": "fVolume", "type": "float", "default": 1.0, "min": 0.0, "max": 2.0,
+      "about": "New Vegas music loudness, times Skyrim's Master and Music volumes." },
+    { "section": "Music", "key": "fCrossfadeSeconds", "type": "float", "default": 2.0, "min": 0.0, "max": 10.0,
+      "about": "How long one track fades into the next when the situation changes." },
+    { "section": "Music", "key": "iDayStartHour", "type": "int", "default": 6, "min": 0, "max": 23,
+      "about": "Skyrim hour when New Vegas's day versions start." },
+    { "section": "Music", "key": "iNightStartHour", "type": "int", "default": 20, "min": 0, "max": 23,
+      "about": "Skyrim hour when New Vegas's night versions start." },
+    { "section": "Music", "key": "sUnknownLoopPool", "type": "pool", "default": "desert", "min": null, "max": null,
+      "about": "What plays for background music added by other mods (not in the mapping)." },
+    { "section": "Music", "key": "sUnknownOncePool", "type": "pool", "default": "silence", "min": null, "max": null,
+      "about": "What plays for one-off stingers added by other mods." },
+    { "section": "Music", "key": "bQuietWhenUnfocused", "type": "bool", "default": true, "min": null, "max": null,
+      "about": "Fade the New Vegas music and radio out while Skyrim isn't the active window." },
+    { "section": "Paths", "key": "sFalloutNVPath", "type": "string", "default": "", "min": null, "max": null,
+      "about": "Fallout: New Vegas folder. Empty = the one Melty passes in, else the one Steam registered." },
+    { "section": "Debug", "key": "bVerboseLog", "type": "bool", "default": false, "min": null, "max": null,
+      "about": "Log every music decision to MojaveInSkyrim.log." }
+  ]
+}

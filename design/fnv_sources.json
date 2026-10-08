@@ -1,0 +1,16 @@
+{
+  "sheet": "fnv_sources",
+  "about": "Where in the player's own Fallout: New Vegas install the mod reads from (nothing from New Vegas is shipped). Each row becomes one FnvSource struct.",
+  "columns": {
+    "id": "source id, referenced by code (music_pools uses 'music', radio_songs 'songs', radio_dj 'voices')",
+    "path": "path under the New Vegas folder",
+    "kind": "folder | bsa",
+    "inner": "folder inside the archive (bsa only), else ''",
+    "usedBy": "the sheet that reads from it"
+  },
+  "rows": [
+    { "id": "music",  "path": "Data/Music",                 "kind": "folder", "inner": "",                                               "usedBy": "music_pools" },
+    { "id": "songs",  "path": "Data/Fallout - Sound.bsa",   "kind": "bsa",    "inner": "sound\\songs\\radionv",                          "usedBy": "radio_songs" },
+    { "id": "voices", "path": "Data/Fallout - Voices1.bsa", "kind": "bsa",    "inner": "sound\\voice\\falloutnv.esm\\maleuniquemrnewvegas", "usedBy": "radio_dj" }
+  ]
+}

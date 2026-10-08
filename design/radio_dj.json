@@ -1,0 +1,18 @@
+{
+  "sheet": "radio_dj",
+  "about": "Mr. New Vegas's lines, read from inside the player's own {fnv}/Data/Fallout - Voices1.bsa (sound\\voice\\falloutnv.esm\\maleuniquemrnewvegas). A line is <prefix>_<formid>_<n>.ogg; lines sharing a form ID play in order of n. Each row becomes one DjCategory struct.",
+  "columns": {
+    "id": "category id",
+    "prefix": "file name prefix inside the Mr. New Vegas voice folder",
+    "role": "when it plays: switch_on | before_song | news_open | news_story | news_close"
+  },
+  "rows": [
+    { "id": "hello",       "prefix": "radionewvegas_radiohello",    "role": "switch_on" },
+    { "id": "song_intro",  "prefix": "radionewve_rnvmusicintroge",  "role": "before_song" },
+    { "id": "news_intro",  "prefix": "radionewvegas_rnvnewsintro",  "role": "news_open" },
+    { "id": "news_story1", "prefix": "radionewvegas_rnvnewsstory",  "role": "news_story" },
+    { "id": "news_story2", "prefix": "radionewve_rnvnewsstory2",    "role": "news_story" },
+    { "id": "news_story3", "prefix": "radionewve_rnvnewsstory3",    "role": "news_story" },
+    { "id": "news_post",   "prefix": "radionewvegas_rnvnewspost",   "role": "news_close" }
+  ]
+}

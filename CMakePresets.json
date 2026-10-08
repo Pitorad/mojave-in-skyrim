@@ -1,0 +1,20 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/../.tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "release", "configurePreset": "default", "configuration": "RelWithDebInfo" },
+    { "name": "debug", "configurePreset": "default", "configuration": "Debug" }
+  ]
+}
