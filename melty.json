@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "mode": "installed",
+  "games": [
+    {
+      "slug": "skyrim-se",
+      "role": "primary",
+      "version": ">=1.6.1170 <=1.7.104"
+    },
+    {
+      "slug": "fallout-new-vegas",
+      "role": "companion"
+    }
+  ],
+  "components": [
+    {
+      "id": "main",
+      "fileName": "MojaveInSkyrim-*.zip",
+      "label": "Courier 6 went down to Skyrim",
+      "kind": "main",
+      "required": true
+    }
+  ],
+  "requirements": [
+    {
+      "kind": "loader",
+      "id": "ultimate-asi-loader"
+    }
+  ],
+  "mappings": [
+    {
+      "component": "main",
+      "from": "Data/",
+      "to": "{game}/Data"
+    },
+    {
+      "component": "main",
+      "from": "MojaveInSkyrim.asi",
+      "to": "{game}"
+    },
+    {
+      "component": "main",
+      "from": "MojaveInSkyrim.ini",
+      "to": "{game}"
+    }
+  ],
+  "launch": {
+    "kind": "exe",
+    "path": "{game}/SkyrimSE.exe",
+    "env": {
+      "MOJAVEINSKYRIM_FNV": "{game:fallout-new-vegas}"
+    }
+  }
+}
