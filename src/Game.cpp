@@ -20,6 +20,9 @@ namespace mis::Game
 		std::mutex             g_noticeLock;
 		std::vector<std::string> g_notices;
 		std::atomic<bool>      g_started{ false };
+		std::atomic<bool>      g_mainMenuOpen{ false };
+		bool                   g_seenMainMenu = false;  // game thread only
+		int                    g_attempts = 0;
 
 		void ShowQueuedNotices()  // game thread only
 		{
@@ -44,7 +47,7 @@ namespace mis::Game
 
 			RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>*) override
 			{
-				ShowQueuedNotices();
+				ShowQueuedNotices();  // called every frame, with or without input
 				if (!a_event) {
 					return RE::BSEventNotifyControl::kContinue;
 				}
@@ -120,10 +123,13 @@ namespace mis::Game
 			return false;
 		}
 
-		void OnDataLoaded()
+		bool OnDataLoaded()
 		{
 			bool ok = true;
 			for (const auto& h : sheets::kHooks) {
+				if (h.id == Hook::input && ok) {
+					continue;  // added last, once everything else is in place (an event sink can't be added twice)
+				}
 				const bool r = Install(h.id);
 				ok &= r;
 				if (r) {
@@ -133,10 +139,15 @@ namespace mis::Game
 				}
 			}
 			if (!ok) {
-				logger::error("Mojave in Skyrim stays off: a hook failed");
-				return;
+				return false;
+			}
+			const bool input = Install(Hook::input);
+			logger::info("hook input {}", input ? "ok" : "FAILED");
+			if (!input) {
+				return false;
 			}
 			Director::Start();
+			return true;
 		}
 
 		class MenuSink final : public RE::BSTEventSink<RE::MenuOpenCloseEvent>
@@ -150,11 +161,23 @@ namespace mis::Game
 
 			RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override
 			{
-				// data_loaded: the first menu event once the player form (0x7) exists.
-				if (!g_started && RE::TESForm::LookupByID(0x7)) {
-					g_started = true;
-					logger::info("hook data_loaded ok: forms are loaded ({} menu event)", a_event ? a_event->menuName.c_str() : "?");
-					OnDataLoaded();
+				// data_loaded: the Main Menu opens only after every plugin has loaded. (Menus such as the
+				// loading spinner open earlier, while plugins are still loading.) Later menu events retry
+				// if something wasn't ready.
+				const bool mainMenu = a_event && a_event->opening && a_event->menuName == RE::MainMenu::MENU_NAME;
+				if (a_event && a_event->menuName == RE::MainMenu::MENU_NAME) {
+					g_mainMenuOpen = a_event->opening;
+				}
+				if (!g_started && (mainMenu || g_seenMainMenu) && RE::TESForm::LookupByID(0x7) && g_attempts < 20) {
+					g_seenMainMenu = true;
+					++g_attempts;
+					logger::info("hook data_loaded ok: forms are loaded ({} menu event, attempt {})", a_event->menuName.c_str(), g_attempts);
+					g_started = OnDataLoaded();
+					if (!g_started && g_attempts < 20) {
+						logger::error("not ready yet; trying again on the next menu event");
+					} else if (!g_started) {
+						logger::error("Mojave in Skyrim stays off: a hook failed");
+					}
 				}
 				ShowQueuedNotices();
 				return RE::BSEventNotifyControl::kContinue;
@@ -186,6 +209,11 @@ namespace mis::Game
 		if (const auto it = g_types.find(cur); it != g_types.end()) {
 			now.pool = it->second;
 			now.known = true;
+		} else if (!skyrim_cast<const RE::BGSMusicType*>(cur)) {
+			// Skyrim's internal NoMusic: it wants silence (main menu, loading screens).
+			const auto& s = Settings::Get();
+			now.pool = g_mainMenuOpen ? s.music_sMainMenuPool : s.music_sNoMusicPool;
+			now.known = true;
 		} else {
 			const auto& s = Settings::Get();
 			now.pool = cur->flags.any(RE::BSIMusicType::MST::kPlaysOnce) ? s.music_sUnknownOncePool : s.music_sUnknownLoopPool;
@@ -203,7 +231,7 @@ namespace mis::Game
 			const char* ed = form->GetFormEditorID();
 			return fmt::format("{} [{:08X}]", ed && *ed ? ed : "?", form->GetFormID());
 		}
-		return "(not a music type form)";
+		return fmt::format("(not a music type form: {})", typeid(*t).name());
 	}
 
 	void SetSkyrimMusicMuted(bool a_muted)

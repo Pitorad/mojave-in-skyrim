@@ -218,14 +218,14 @@ namespace mis::sheets
 	struct HookInfo { Hook id; std::string_view name; std::string_view api; bool verified; };
 	inline constexpr std::array<HookInfo, 11> kHooks{{
 		{ Hook::asi_boot, "asi_boot", "DllMain (.asi via Ultimate ASI Loader) -> thread waits for RE::UI::GetSingleton()", false },
-		{ Hook::data_loaded, "data_loaded", "RE::UI MenuOpenCloseEvent sink + RE::TESForm::LookupByID(0x7)", false },
+		{ Hook::data_loaded, "data_loaded", "RE::UI MenuOpenCloseEvent sink: Main Menu opening (all plugins loaded), retried on later menu events", false },
 		{ Hook::music_types, "music_types", "RE::TESDataHandler::LookupFormID(localId, plugin)", false },
-		{ Hook::music_current, "music_current", "RE::BSMusicManager::GetSingleton()->current, skyrim_cast<RE::BGSMusicType*>", false },
+		{ Hook::music_current, "music_current", "RE::BSMusicManager::GetSingleton()->current, skyrim_cast<RE::BGSMusicType*> (not a form = Skyrim's internal NoMusic)", false },
 		{ Hook::music_mute, "music_mute", "RE::BGSSoundCategory 0x071E64 (AudioCategoryMUS) SetStaticVolumeMultiplier", false },
 		{ Hook::volume_sliders, "volume_sliders", "RE::BGSSoundCategory 0x0EB803 (master) and 0x071E64 (music) volumeMult", false },
 		{ Hook::game_hour, "game_hour", "RE::Calendar::GetSingleton()->GetHour()", false },
 		{ Hook::input, "input", "RE::BSInputDeviceManager::GetSingleton()->AddEventSink(BSTEventSink<InputEvent*>)", false },
-		{ Hook::ui_state, "ui_state", "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console)", false },
+		{ Hook::ui_state, "ui_state", "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console); Main Menu open/close events", false },
 		{ Hook::notify, "notify", "RE::SendHUDMessage::ShowHUDMessage(text)", false },
 		{ Hook::focus, "focus", "Win32 GetForegroundWindow + GetWindowThreadProcessId", false },
 	}};
@@ -244,6 +244,8 @@ namespace mis::sheets
 		std::int32_t music_iNightStartHour{ 20 };
 		Pool music_sUnknownLoopPool{ Pool::desert };
 		Pool music_sUnknownOncePool{ Pool::silence };
+		Pool music_sMainMenuPool{ Pool::title };
+		Pool music_sNoMusicPool{ Pool::silence };
 		bool music_bQuietWhenUnfocused{ true };
 		std::string paths_sFalloutNVPath{ "" };
 		bool debug_bVerboseLog{ false };
@@ -264,6 +266,8 @@ namespace mis::sheets
 		a_out.music_iNightStartHour = std::clamp<std::int32_t>(a_ini.GetInt("Music", "iNightStartHour", a_out.music_iNightStartHour), 0, 23);
 		a_out.music_sUnknownLoopPool = a_ini.GetPool("Music", "sUnknownLoopPool", a_out.music_sUnknownLoopPool);
 		a_out.music_sUnknownOncePool = a_ini.GetPool("Music", "sUnknownOncePool", a_out.music_sUnknownOncePool);
+		a_out.music_sMainMenuPool = a_ini.GetPool("Music", "sMainMenuPool", a_out.music_sMainMenuPool);
+		a_out.music_sNoMusicPool = a_ini.GetPool("Music", "sNoMusicPool", a_out.music_sNoMusicPool);
 		a_out.music_bQuietWhenUnfocused = a_ini.GetBool("Music", "bQuietWhenUnfocused", a_out.music_bQuietWhenUnfocused);
 		a_out.paths_sFalloutNVPath = a_ini.GetString("Paths", "sFalloutNVPath", a_out.paths_sFalloutNVPath);
 		a_out.debug_bVerboseLog = a_ini.GetBool("Debug", "bVerboseLog", a_out.debug_bVerboseLog);
