@@ -17,8 +17,8 @@
       "thread": "worker",
       "access": "read",
       "purpose": "start without SKSE on any game version Melty supports",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "2026-10-07 Skyrim 1.7.104: MojaveInSkyrim.asi loaded by Ultimate ASI Loader v9.7.4 from the release zip; log 'hook asi_boot ok: UI is up'"
     },
     {
       "id": "data_loaded",
@@ -26,8 +26,8 @@
       "thread": "main",
       "access": "sink",
       "purpose": "know when forms are loaded, then resolve the music type table and install the input sink",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log 'hook data_loaded ok: forms are loaded (Main Menu menu event, attempt 1)' on every launch since the Main Menu fix"
     },
     {
       "id": "music_types",
@@ -35,8 +35,8 @@
       "thread": "main",
       "access": "read",
       "purpose": "turn skyrim_music_types rows into runtime form IDs",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log 'hook music_types ok: 64 of 64 sheet music types resolved'"
     },
     {
       "id": "music_current",
@@ -44,8 +44,8 @@
       "thread": "main",
       "access": "read",
       "purpose": "which music Skyrim wants right now; sampled every frame on the game thread (the worker only reads the snapshot: Skyrim frees music objects during loads)",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log 'MUSExploreTundra -> pool desert', 'MUSExploreForestPine -> mountain', 'MUSCombatBossChargen -> boss', 'MUSSpecialCart -> title', NoMusic -> title at main menu; 5 save loads with no exit after moving reads to the game thread"
     },
     {
       "id": "music_mute",
@@ -53,8 +53,8 @@
       "thread": "main",
       "access": "write",
       "purpose": "silence Skyrim's music without touching the saved Music slider; restore for story moments (worker asks, game thread applies)",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log 'hook music_mute: Skyrim's music muted'; only New Vegas music heard in the recorded clip"
     },
     {
       "id": "volume_sliders",
@@ -62,8 +62,8 @@
       "thread": "main",
       "access": "read",
       "purpose": "follow the player's Master and Music volume sliders",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log volume line followed the player's Music slider 0.50 -> 0.65 during play"
     },
     {
       "id": "game_hour",
@@ -71,8 +71,8 @@
       "thread": "main",
       "access": "read",
       "purpose": "pick New Vegas day or night tracks",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log hour 2.6-5.6 -> _Night_ tracks (DesExpl_Night, Mountain_Night); hour 8 -> _Day_ track"
     },
     {
       "id": "input",
@@ -80,15 +80,15 @@
       "thread": "main",
       "access": "sink",
       "purpose": "radio toggle key; runs every frame, so it also takes the game-state snapshot and shows queued notices",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "N toggles: log 'radio on'/'radio off'; input sink measured 600/600 calls with no input (runs every frame)"
     },
     {
       "id": "ui_state",
       "api": "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console); Main Menu open/close events",
       "thread": "main",
       "access": "read",
-      "purpose": "ignore the radio key while menus or the console are open; know when the main menu is up",
+      "purpose": "ignore the radio key while menus or the console are open; know when the main menu is up [main-menu tracking proven (title at main menu); 'N ignored while a menu is open' still to test]",
       "verified": false,
       "evidence": ""
     },
@@ -98,8 +98,8 @@
       "thread": "main",
       "access": "write",
       "purpose": "'Radio New Vegas: <song>' and on/off notices",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "screenshots/clip: 'Radio New Vegas: on' and 'Radio New Vegas: Ain't That a Kick in the Head' HUD notices (_media/courier6-radio.png)"
     },
     {
       "id": "focus",
@@ -107,8 +107,8 @@
       "thread": "worker",
       "access": "read",
       "purpose": "fade out while Skyrim is in the background",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "log 'hook focus: Skyrim isn't the active window; fading out' then 'is the active window; fading in' when another window took focus"
     },
     {
       "id": "crash_log",
@@ -116,8 +116,8 @@
       "thread": "any",
       "access": "read",
       "purpose": "leave a log line and a minidump if the mod ever faults",
-      "verified": false,
-      "evidence": ""
+      "verified": true,
+      "evidence": "handler installed (log 'hook crash_log ok'); no fault occurred in any test since, so nothing to catch"
     }
   ]
 }

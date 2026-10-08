@@ -71,3 +71,11 @@ New Vegas is read from the player's own install at run time; nothing from either
   exceptions -> mod source must be GPL-compatible and published), Address Library official copy,
   package + Melty recipe (primary skyrim-se, companion fallout-new-vegas, loader
   ultimate-asi-loader, launch {game}/SkyrimSE.exe with MOJAVEINSKYRIM_FNV={game:fallout-new-vegas}).
+
+## Melty (2026-10-07)
+- Draft: "Courier 6 went down to Skyrim", modId 1df0c90d-d690-4584-88eb-c1dd454ed4de,
+  slug courier-6-went-down-to-skyrim, linked to github.com/Pitorad/mojave-in-skyrim (GPL-3.0).
+- Save-load exit FIXED: game state now read only on the game thread (per-frame snapshot in the
+  input sink). 5 loads OK. Release zip via tools/package.py; inspect/validate/one_click: yes.
+- Media: MergedGames/_media/courier6-radio-clip.mp4 (32 s) + courier6-radio.png (window capture
+  died after input; screen duplication `ddagrab` + um's game-only audio worked).

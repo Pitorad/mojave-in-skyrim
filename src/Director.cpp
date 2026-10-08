@@ -123,6 +123,10 @@ namespace mis::Director
 
 				// Loudness: Skyrim's sliders x INI x focus.
 				const float focusTarget = (!s.music_bQuietWhenUnfocused || Game::GameHasFocus()) ? 1.0f : 0.0f;
+				if (focusTarget != lastFocusTarget) {
+					logger::info("hook focus: Skyrim {} the active window; fading {}", focusTarget > 0 ? "is" : "isn't", focusTarget > 0 ? "in" : "out");
+					lastFocusTarget = focusTarget;
+				}
 				focus += std::clamp(focusTarget - focus, -a_dt * 2.0f, a_dt * 2.0f);
 				const float master = snap.master;
 				musicDeck.Update(a_dt, master * snap.music * s.music_fVolume * focus);
@@ -232,6 +236,7 @@ namespace mis::Director
 			int                      songsSinceNews{ 0 };
 			std::string              lastTrack;
 			float                    focus{ 1.0f };
+			float                    lastFocusTarget{ 1.0f };
 			int                      ticksSinceVolumeLog{ 0 };
 		};
 	}

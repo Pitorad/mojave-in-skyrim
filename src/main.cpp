@@ -48,6 +48,15 @@ namespace
 		const auto self = ModulePath();
 		logger::info("Mojave in Skyrim {} ({}) in {}", MIS_VERSION, self.filename().string(), REL::Module::get().version().string());
 
+		// Without the Address Library file for this exact game build, CommonLib would stop the game.
+		// Stay off instead (Skyrim's own music plays).
+		const auto ver = REL::Module::get().version();
+		const auto lib = fs::path("Data/SKSE/Plugins") / fmt::format("versionlib-{}-{}-{}-{}.bin", ver[0], ver[1], ver[2], ver[3]);
+		if (std::error_code ec; !fs::exists(lib, ec)) {
+			logger::error("{} is missing: this Skyrim version isn't supported yet; Mojave in Skyrim stays off", lib.string());
+			return 0;
+		}
+
 		mis::Settings::Load(fs::path(self).replace_extension(".ini"));
 		mis::Game::LogHookTable();
 
