@@ -213,10 +213,11 @@ namespace mis::sheets
 		ui_state,
 		notify,
 		focus,
+		crash_log,
 		kCount
 	};
 	struct HookInfo { Hook id; std::string_view name; std::string_view api; bool verified; };
-	inline constexpr std::array<HookInfo, 11> kHooks{{
+	inline constexpr std::array<HookInfo, 12> kHooks{{
 		{ Hook::asi_boot, "asi_boot", "DllMain (.asi via Ultimate ASI Loader) -> thread waits for RE::UI::GetSingleton()", false },
 		{ Hook::data_loaded, "data_loaded", "RE::UI MenuOpenCloseEvent sink: Main Menu opening (all plugins loaded), retried on later menu events", false },
 		{ Hook::music_types, "music_types", "RE::TESDataHandler::LookupFormID(localId, plugin)", false },
@@ -228,6 +229,7 @@ namespace mis::sheets
 		{ Hook::ui_state, "ui_state", "RE::UI::GetSingleton()->GameIsPaused(), IsMenuOpen(Console); Main Menu open/close events", false },
 		{ Hook::notify, "notify", "RE::SendHUDMessage::ShowHUDMessage(text)", false },
 		{ Hook::focus, "focus", "Win32 GetForegroundWindow + GetWindowThreadProcessId", false },
+		{ Hook::crash_log, "crash_log", "AddVectoredExceptionHandler + MiniDumpWriteDump (dbghelp) for faults inside MojaveInSkyrim.asi", false },
 	}};
 
 	// Settings: one field per settings row, named <section>_<key>.

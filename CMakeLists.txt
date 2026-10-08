@@ -41,6 +41,7 @@ set_target_properties(MojaveInSkyrim PROPERTIES SUFFIX ".asi")
 
 target_include_directories(MojaveInSkyrim PRIVATE src extern/miniaudio)
 target_precompile_headers(MojaveInSkyrim PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/PCH.h>)
+target_link_libraries(MojaveInSkyrim PRIVATE dbghelp.lib psapi.lib)
 target_compile_definitions(MojaveInSkyrim PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN MIS_VERSION="${PROJECT_VERSION}")
 if(MSVC)
 	# C4062: a switch over a sheet enum must name every value (no default), so a new sheet row

@@ -1,0 +1,7 @@
+[submodule "extern/CommonLibSSE-NG"]
+	path = extern/CommonLibSSE-NG
+	url = https://github.com/alandtse/CommonLibVR.git
+	branch = ng
+[submodule "extern/miniaudio"]
+	path = extern/miniaudio
+	url = https://github.com/mackron/miniaudio.git

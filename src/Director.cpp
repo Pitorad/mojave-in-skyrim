@@ -48,9 +48,13 @@ namespace mis::Director
 			void Tick(float a_dt)
 			{
 				const auto& s = Settings::Get();
-				const auto music = Game::CurrentMusic();
+				snap = Game::Sample();  // taken on the game thread; no game objects are touched here
+				if (!snap.valid) {
+					return;  // no frame sampled yet
+				}
+				const auto& music = snap;
 				if (music.type != lastType) {
-					logger::info("skyrim music: {} -> pool {}{}", Game::MusicTypeName(music.type),
+					logger::info("skyrim music: {} -> pool {}{}", music.typeName,
 						music.type ? PoolRow(music.pool).name : "(keep)", music.known || !music.type ? "" : " (not in the sheet)");
 					lastType = music.type;
 				}
@@ -61,7 +65,7 @@ namespace mis::Director
 				}
 
 				const bool skyrimMoment = want == Pool::skyrim;
-				Game::SetSkyrimMusicMuted(!skyrimMoment);
+				Game::WantSkyrimMusicMuted(!skyrimMoment);
 
 				// Radio on/off.
 				const bool radioWanted = g_radioWanted;
@@ -120,21 +124,21 @@ namespace mis::Director
 				// Loudness: Skyrim's sliders x INI x focus.
 				const float focusTarget = (!s.music_bQuietWhenUnfocused || Game::GameHasFocus()) ? 1.0f : 0.0f;
 				focus += std::clamp(focusTarget - focus, -a_dt * 2.0f, a_dt * 2.0f);
-				const float master = Game::MasterVolume();
-				musicDeck.Update(a_dt, master * Game::MusicVolume() * s.music_fVolume * focus);
+				const float master = snap.master;
+				musicDeck.Update(a_dt, master * snap.music * s.music_fVolume * focus);
 				radioDeck.Update(a_dt, master * s.radio_fVolume * focus);
 
 				if (++ticksSinceVolumeLog >= 1200) {  // once a minute
 					ticksSinceVolumeLog = 0;
 					logger::info("volume: master {:.2f}, music {:.2f}, hour {:.1f}, focus {:.0f}, music '{}', radio '{}'",
-						master, Game::MusicVolume(), Game::Hour(), focus, musicDeck.Current(), radioDeck.Current());
+						master, snap.music, snap.hour, focus, musicDeck.Current(), radioDeck.Current());
 				}
 			}
 
 			bool IsNight() const
 			{
 				const auto& s = Settings::Get();
-				const int h = static_cast<int>(Game::Hour());
+				const int h = static_cast<int>(snap.hour);
 				const int day = s.music_iDayStartHour, night = s.music_iNightStartHour;
 				return day <= night ? (h < day || h >= night) : (h >= night && h < day);
 			}
@@ -217,7 +221,8 @@ namespace mis::Director
 			Deck                     musicDeck{ "music" };
 			Deck                     radioDeck{ "radio" };
 			std::mt19937             rng{ std::random_device{}() };
-			const void*              lastType{ reinterpret_cast<const void*>(1) };
+			std::uintptr_t           lastType{ 1 };
+			Game::Snapshot           snap;
 			Pool                     lastLoopPool{ Pool::silence };
 			std::optional<Pool>      playingPool;
 			bool                     poolDone{ false };

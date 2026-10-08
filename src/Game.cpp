@@ -1,5 +1,6 @@
 #include "Game.h"
 
+#include "CrashLog.h"
 #include "Director.h"
 #include "Settings.h"
 
@@ -16,7 +17,11 @@ namespace mis::Game
 		RE::BGSSoundCategory*  g_master = nullptr;
 		RE::BGSSoundCategory*  g_music = nullptr;
 		std::uint16_t          g_musicStaticMult = 0xFFFF;  // Skyrim's own value, restored for story moments
-		std::atomic<bool>      g_muted{ false };
+		bool                   g_muted = false;          // game thread only
+		std::atomic<bool>      g_wantMuted{ false };     // set by the Director
+		std::mutex             g_snapLock;
+		Snapshot               g_snap;                   // written on the game thread
+		const RE::BSIMusicType* g_lastType = nullptr;    // game thread only
 		std::mutex             g_noticeLock;
 		std::vector<std::string> g_notices;
 		std::atomic<bool>      g_started{ false };
@@ -36,6 +41,8 @@ namespace mis::Game
 			}
 		}
 
+		void SampleGame();  // game thread, every frame
+
 		class InputSink final : public RE::BSTEventSink<RE::InputEvent*>
 		{
 		public:
@@ -47,7 +54,9 @@ namespace mis::Game
 
 			RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>*) override
 			{
-				ShowQueuedNotices();  // called every frame, with or without input
+				// Called every frame, with or without input.
+				SampleGame();
+				ShowQueuedNotices();
 				if (!a_event) {
 					return RE::BSEventNotifyControl::kContinue;
 				}
@@ -99,7 +108,7 @@ namespace mis::Game
 			case Hook::volume_sliders:
 				g_master = RE::TESForm::LookupByID<RE::BGSSoundCategory>(kMasterCategory);
 				g_music = RE::TESForm::LookupByID<RE::BGSSoundCategory>(kMusicCategory);
-				if (g_music && !g_muted) {
+				if (g_music && !g_muted && g_music->staticMult != 0) {
 					g_musicStaticMult = g_music->staticMult;
 				}
 				return g_master && g_music;
@@ -117,6 +126,8 @@ namespace mis::Game
 				return true;  // proven by the first notice on screen
 			case Hook::focus:
 				return true;
+			case Hook::crash_log:
+				return CrashLog::Installed();
 			case Hook::kCount:
 				break;
 			}
@@ -183,6 +194,65 @@ namespace mis::Game
 				return RE::BSEventNotifyControl::kContinue;
 			}
 		};
+
+		std::string MusicTypeName(const RE::BSIMusicType* a_type)
+		{
+			if (!a_type) {
+				return "(none)";
+			}
+			if (auto form = skyrim_cast<const RE::BGSMusicType*>(a_type)) {
+				const char* ed = form->GetFormEditorID();
+				return fmt::format("{} [{:08X}]", ed && *ed ? ed : "?", form->GetFormID());
+			}
+			return fmt::format("(not a music type form: {})", typeid(*a_type).name());
+		}
+
+		void ApplyMute()
+		{
+			const bool want = g_wantMuted;
+			if (!g_music || g_muted == want) {
+				return;
+			}
+			g_muted = want;
+			// The static multiplier is form data, not the player's saved Music slider.
+			g_music->staticMult = want ? 0 : g_musicStaticMult;
+			logger::info("hook music_mute: Skyrim's music {}", want ? "muted" : "restored");
+		}
+
+		void SampleGame()
+		{
+			ApplyMute();
+			auto mgr = RE::BSMusicManager::GetSingleton();
+			const RE::BSIMusicType* cur = mgr ? mgr->current : nullptr;
+			const auto& s = Settings::Get();
+			sheets::Pool pool = sheets::Pool::silence;
+			bool known = false;
+			if (cur) {
+				if (const auto it = g_types.find(cur); it != g_types.end()) {
+					pool = it->second;
+					known = true;
+				} else if (!skyrim_cast<const RE::BGSMusicType*>(cur)) {
+					// Skyrim's internal NoMusic: it wants silence (main menu, loading screens).
+					pool = g_mainMenuOpen ? s.music_sMainMenuPool : s.music_sNoMusicPool;
+					known = true;
+				} else {
+					pool = cur->flags.any(RE::BSIMusicType::MST::kPlaysOnce) ? s.music_sUnknownOncePool : s.music_sUnknownLoopPool;
+				}
+			}
+			const auto cal = RE::Calendar::GetSingleton();
+			std::scoped_lock l(g_snapLock);
+			if (cur != g_lastType || !g_snap.valid) {
+				g_lastType = cur;
+				g_snap.typeName = MusicTypeName(cur);
+			}
+			g_snap.valid = true;
+			g_snap.type = reinterpret_cast<std::uintptr_t>(cur);
+			g_snap.pool = pool;
+			g_snap.known = known;
+			g_snap.master = g_master ? std::clamp(g_master->volumeMult, 0.0f, 1.0f) : 1.0f;
+			g_snap.music = g_music ? std::clamp(g_music->volumeMult, 0.0f, 1.0f) : 1.0f;
+			g_snap.hour = cal ? cal->GetHour() : 12.0f;
+		}
 	}
 
 	void LogHookTable()
@@ -197,62 +267,13 @@ namespace mis::Game
 		RE::UI::GetSingleton()->AddEventSink(MenuSink::Get());
 	}
 
-	MusicNow CurrentMusic()
+	Snapshot Sample()
 	{
-		MusicNow now;
-		auto mgr = RE::BSMusicManager::GetSingleton();
-		const RE::BSIMusicType* cur = mgr ? mgr->current : nullptr;
-		now.type = cur;
-		if (!cur) {
-			return now;
-		}
-		if (const auto it = g_types.find(cur); it != g_types.end()) {
-			now.pool = it->second;
-			now.known = true;
-		} else if (!skyrim_cast<const RE::BGSMusicType*>(cur)) {
-			// Skyrim's internal NoMusic: it wants silence (main menu, loading screens).
-			const auto& s = Settings::Get();
-			now.pool = g_mainMenuOpen ? s.music_sMainMenuPool : s.music_sNoMusicPool;
-			now.known = true;
-		} else {
-			const auto& s = Settings::Get();
-			now.pool = cur->flags.any(RE::BSIMusicType::MST::kPlaysOnce) ? s.music_sUnknownOncePool : s.music_sUnknownLoopPool;
-		}
-		return now;
+		std::scoped_lock l(g_snapLock);
+		return g_snap;
 	}
 
-	std::string MusicTypeName(const void* a_type)
-	{
-		if (!a_type) {
-			return "(none)";
-		}
-		auto t = static_cast<const RE::BSIMusicType*>(a_type);
-		if (auto form = skyrim_cast<const RE::BGSMusicType*>(t)) {
-			const char* ed = form->GetFormEditorID();
-			return fmt::format("{} [{:08X}]", ed && *ed ? ed : "?", form->GetFormID());
-		}
-		return fmt::format("(not a music type form: {})", typeid(*t).name());
-	}
-
-	void SetSkyrimMusicMuted(bool a_muted)
-	{
-		if (!g_music || g_muted == a_muted) {
-			return;
-		}
-		g_muted = a_muted;
-		// The static multiplier is form data, not the player's saved Music slider.
-		g_music->staticMult = a_muted ? 0 : g_musicStaticMult;
-		logger::info("hook music_mute: Skyrim's music {}", a_muted ? "muted" : "restored");
-	}
-
-	float MasterVolume() { return g_master ? std::clamp(g_master->volumeMult, 0.0f, 1.0f) : 1.0f; }
-	float MusicVolume() { return g_music ? std::clamp(g_music->volumeMult, 0.0f, 1.0f) : 1.0f; }
-
-	float Hour()
-	{
-		auto cal = RE::Calendar::GetSingleton();
-		return cal ? cal->GetHour() : 12.0f;
-	}
+	void WantSkyrimMusicMuted(bool a_muted) { g_wantMuted = a_muted; }
 
 	bool GameHasFocus()
 	{

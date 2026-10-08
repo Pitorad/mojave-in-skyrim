@@ -1,5 +1,4 @@
 build/
 build.log
 dist/
-extern/
 *.pdb

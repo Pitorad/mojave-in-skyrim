@@ -1,3 +1,4 @@
+#include "CrashLog.h"
 #include "Director.h"
 #include "Game.h"
 #include "Settings.h"
@@ -43,6 +44,7 @@ namespace
 	DWORD WINAPI BootThread(LPVOID)
 	{
 		SetupLog();
+		mis::CrashLog::Install(g_module);
 		const auto self = ModulePath();
 		logger::info("Mojave in Skyrim {} ({}) in {}", MIS_VERSION, self.filename().string(), REL::Module::get().version().string());
 

@@ -27,6 +27,7 @@
 #include <vector>
 
 #include <Windows.h>
+#include <Psapi.h>
 
 namespace logger = SKSE::log;
 namespace fs = std::filesystem;

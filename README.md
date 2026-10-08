@@ -1,6 +1,8 @@
-# Mojave in Skyrim
+# Courier 6 went down to Skyrim
 
-Skyrim Special Edition, scored by Fallout: New Vegas. Single player.
+*Patrolling the Tundra almost makes you wish for a nuclear winter.* Skyrim Special Edition, scored by
+Fallout: New Vegas: its soundtrack and Radio New Vegas, live in Skyrim. Single player.
+(Project name: Mojave in Skyrim.)
 
 - **The Mojave bleeds in.** Skyrim still decides what kind of music a moment needs (wilderness,
   town, dungeon, combat, boss, discovery, death), and New Vegas answers it from your own copy: desert
@@ -38,8 +40,11 @@ checks every cell, every cross-sheet reference and every row against your instal
 cmake --preset default
 cmake --build --preset release
 ```
-Needs Visual Studio 2022 Build Tools (C++), vcpkg next to the project in `../.tools/vcpkg`, and
-Python 3.
+Clone with `git clone --recursive` (CommonLibSSE-NG and miniaudio are submodules). Needs Visual
+Studio 2022 Build Tools (C++), vcpkg next to the project in `../.tools/vcpkg`, and Python 3.
+
+## License
+GPL-3.0-or-later (see `LICENSE`), as required by CommonLibSSE-NG, which the plugin links. Remixes welcome.
 
 ## Credits
 - Fallout: New Vegas music, songs and Mr. New Vegas (Wayne Newton) are Bethesda's / Obsidian's and
